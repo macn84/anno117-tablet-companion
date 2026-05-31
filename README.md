@@ -35,6 +35,42 @@ python3 -m http.server 8080
 
 Service worker and PWA install require HTTPS or localhost.
 
+You can also host this app on GitHub Pages — it serves over HTTPS by default,
+so service workers and the install prompt will work. Recommended notes for
+GitHub Pages deployment:
+
+- Publish the repo via GitHub Pages (Settings → Pages) to get a site at
+  https://<your-username>.github.io/<repo>/.
+- Place `sw.js` at the site root and register it with an absolute path:
+  `navigator.serviceWorker.register('/sw.js')` so the service worker's scope
+  covers the entire app.
+- GitHub Pages doesn't allow custom server headers, so keep `sw.js` at the
+  root if you need a wider scope. Add a `404.html` fallback (copy of
+  `index.html`) or use hash-based routing to avoid broken client-side routes.
+- Custom domains are supported as long as GitHub Pages provides an HTTPS
+  certificate for the domain.
+
+Enabling GitHub Pages (quick steps):
+
+1. In your repository, go to **Settings → Pages**.
+2. Under **Source**, select the branch to publish (e.g. `main`) and the root
+   folder (`/`), then Save.
+3. After a few minutes the site will be available at
+   `https://<your-username>.github.io/<repo>/`.
+
+Automatic deployment via GitHub Actions:
+
+- Add the workflow `.github/workflows/deploy-pages.yml` to auto-deploy the
+  `main` branch on push (this repository includes a recommended workflow).
+- Once Pages is enabled, pushing to `main` will trigger the workflow and
+  publish the current repository contents to Pages.
+
+Notes:
+- If you prefer not to use Actions, you can select the `gh-pages` branch as
+  the Pages source and push built files there manually or via other CI.
+- Make sure `sw.js`, `manifest.json`, and `404.html` are present at the
+  repository root so the PWA install and service worker scope work as expected.
+
 ## File structure
 
 ```

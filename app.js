@@ -1,7 +1,11 @@
 // app.js — entry point: service worker registration, app boot, top-level routing
 
-// TODO: register service worker
-// if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js')
+// Register service worker (absolute path ensures correct scope on GitHub Pages)
+if ('serviceWorker' in navigator) {
+	navigator.serviceWorker.register('/sw.js')
+		.then(reg => console.log('Service worker registered:', reg.scope))
+		.catch(err => console.warn('Service worker registration failed:', err));
+}
 
 // TODO: define route constants
 // ROUTES = { SAVE_MANAGER, DASHBOARD, ... }

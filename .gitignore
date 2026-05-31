@@ -19,3 +19,8 @@ build/
 
 # Local dev overrides
 *.local
+
+# Local planning docs (not for repo)
+plan.md
+claude-local.md
+CLAUDE.md
