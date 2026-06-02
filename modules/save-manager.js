@@ -1,21 +1,39 @@
-// modules/save-manager.js — save file profile CRUD
-//
-// Storage key convention:  'save:{saveId}'
-// Index of all save IDs:   'saves:index'  →  string[]
-//
-// A save profile object shape:
-// {
-//   id:           string,   // uuid or timestamp-based
-//   name:         string,
-//   createdAt:    ISO string,
-//   updatedAt:    ISO string,
-//   activeDlcIds: string[], // subset of DLC_REGISTRY ids
-// }
-//
-// Island, specialist, goods, and building data are stored under separate keys
-// namespaced by saveId, managed by their respective modules.
+/**
+ * @module save-manager
+ * @description Save file profile CRUD, backed by localStorage.
+ *
+ * Key layout (all values JSON-serialised):
+ *   saves:index       → string[]             ordered list of all save IDs
+ *   save:{id}         → SaveProfile
+ *   islands:{id}      → Island[]
+ *   specialists:{id}  → SpecialistAssignment[]
+ *   goods:{id}        → GoodEntry[]
+ *   buildings:{id}    → BuildingEntry[]
+ *   festivals:{id}    → FestivalState[]
+ *
+ * Child-data keys follow the pattern `{prefix}{saveId}` so a single prefix
+ * scan is enough to wipe all related data when a save is deleted.
+ */
 
-// Child-data key prefixes that must be cleaned up when a save is deleted.
+/**
+ * @typedef {Object} SaveProfile
+ * @property {string}   id           - Stable ID (base-36 timestamp + random suffix).
+ * @property {string}   name         - User-provided display name.
+ * @property {string}   createdAt    - ISO 8601 creation timestamp.
+ * @property {string}   updatedAt    - ISO 8601 last-modified timestamp.
+ * @property {string[]} activeDlcIds - DLC IDs currently active in this save.
+ */
+
+/**
+ * @typedef {Object} ExportBundle
+ * @property {number}      exportVersion - Schema version; checked on import for forward-compat.
+ * @property {string}      exportedAt    - ISO 8601 export timestamp.
+ * @property {SaveProfile} profile       - Top-level profile for the save.
+ * @property {Object}      childData     - Child datasets keyed by prefix name
+ *                                         (e.g. `"islands"`, `"specialists"`).
+ */
+
+/** localStorage key prefixes whose data must be erased when a save is deleted. */
 const CHILD_KEY_PREFIXES = [
   'islands:',
   'specialists:',
@@ -24,6 +42,11 @@ const CHILD_KEY_PREFIXES = [
   'festivals:',
 ];
 
+/**
+ * Generates a collision-resistant ID without requiring a crypto dependency.
+ * Combines a base-36 timestamp with random entropy sufficient for local use.
+ * @returns {string}
+ */
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
@@ -62,12 +85,22 @@ function readChildKey(prefix, saveId) {
 
 const SaveManager = {
 
+  /** @type {Array<{id: string}>} Populated by {@link SaveManager.init}; used for DLC validation on import. */
   _dlcRegistry: [],
 
+  /**
+   * Seeds the module with the DLC registry so import warnings can reference known DLC IDs.
+   * Must be called once at app startup before any import operations.
+   * @param {Array<{id: string}>} [dlcRegistry=[]] - All known DLC descriptors.
+   */
   init(dlcRegistry = []) {
     this._dlcRegistry = dlcRegistry;
   },
 
+  /**
+   * Returns all save profiles sorted by most recently modified (newest first).
+   * @returns {SaveProfile[]}
+   */
   listAll() {
     const ids = readIndex();
     return ids
@@ -76,6 +109,12 @@ const SaveManager = {
       .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
   },
 
+  /**
+   * Creates a new save profile and persists it to storage.
+   * @param {string}   name                - Display name for the save.
+   * @param {string[]} [activeDlcIds=[]]   - DLC IDs to activate in this save.
+   * @returns {SaveProfile}
+   */
   create(name, activeDlcIds = []) {
     const now = new Date().toISOString();
     const profile = {
@@ -92,10 +131,23 @@ const SaveManager = {
     return profile;
   },
 
+  /**
+   * Returns a single save profile by ID, or `null` if not found.
+   * @param {string} saveId
+   * @returns {SaveProfile|null}
+   */
   get(saveId) {
     return readSave(saveId);
   },
 
+  /**
+   * Shallow-merges `patch` into the save profile and refreshes `updatedAt`.
+   * `id` in the patch is ignored — the ID of a save is immutable.
+   * @param {string}               saveId
+   * @param {Partial<SaveProfile>} patch   - Fields to overwrite.
+   * @returns {SaveProfile} The updated profile.
+   * @throws {Error} If no save with this ID exists.
+   */
   update(saveId, patch) {
     const profile = readSave(saveId);
     if (!profile) throw new Error(`Save not found: ${saveId}`);
@@ -104,18 +156,26 @@ const SaveManager = {
     return updated;
   },
 
+  /**
+   * Permanently removes a save and all its child data from localStorage.
+   * @param {string} saveId
+   */
   delete(saveId) {
-    // Remove child data first
     for (const prefix of CHILD_KEY_PREFIXES) {
       localStorage.removeItem(`${prefix}${saveId}`);
     }
-    // Remove profile
     localStorage.removeItem(`save:${saveId}`);
-    // Remove from index
     const ids = readIndex().filter((id) => id !== saveId);
     writeIndex(ids);
   },
 
+  /**
+   * Serialises a save (profile + all child data) to a pretty-printed JSON string,
+   * suitable for file download or cross-device transfer.
+   * @param {string} saveId
+   * @returns {string} JSON representation of an {@link ExportBundle}.
+   * @throws {Error} If no save with this ID exists.
+   */
   exportToJSON(saveId) {
     const profile = readSave(saveId);
     if (!profile) throw new Error(`Save not found: ${saveId}`);
@@ -130,7 +190,7 @@ const SaveManager = {
     for (const prefix of CHILD_KEY_PREFIXES) {
       const data = readChildKey(prefix, saveId);
       if (data !== null) {
-        // Strip trailing ':' for the bundle key, e.g. 'islands:' → 'islands'
+        // Strip trailing ':' for the bundle key e.g. 'islands:' → 'islands'
         bundle.childData[prefix.slice(0, -1)] = data;
       }
     }
@@ -138,6 +198,14 @@ const SaveManager = {
     return JSON.stringify(bundle, null, 2);
   },
 
+  /**
+   * Imports a single save from a JSON string produced by {@link SaveManager.exportToJSON}.
+   * Always assigns a fresh ID to prevent collisions with existing saves.
+   * Emits a console warning when the bundle references DLC IDs absent from the registry.
+   * @param {string} jsonString
+   * @returns {SaveProfile} The newly created profile.
+   * @throws {Error} If the JSON is malformed or fails structure validation.
+   */
   importFromJSON(jsonString) {
     let bundle;
     try {
@@ -156,7 +224,6 @@ const SaveManager = {
       throw new Error('Save profile is missing required fields (name, createdAt).');
     }
 
-    // Warn about inactive DLCs referenced in this save
     const unknownDlcs = (profile.activeDlcIds || []).filter((id) => {
       if (!SaveManager._dlcRegistry) return false;
       return !SaveManager._dlcRegistry.some((dlc) => dlc.id === id);
@@ -165,7 +232,6 @@ const SaveManager = {
       console.warn('Imported save references DLC IDs not in current registry:', unknownDlcs);
     }
 
-    // Assign a new ID to avoid collision with any existing save
     const newId = uid();
     const now = new Date().toISOString();
     const imported = {
@@ -188,14 +254,23 @@ const SaveManager = {
     return imported;
   },
 
-  // Convenience: export every save as one JSON backup file.
+  /**
+   * Exports every save as a single JSON string — useful as a full device backup.
+   * @returns {string}
+   */
   exportAllToJSON() {
     const saves = this.listAll();
     const bundles = saves.map((s) => JSON.parse(this.exportToJSON(s.id)));
     return JSON.stringify({ exportVersion: 1, exportedAt: new Date().toISOString(), saves: bundles }, null, 2);
   },
 
-  // Import a full backup produced by exportAllToJSON. Returns array of imported profiles.
+  /**
+   * Imports a full backup produced by {@link SaveManager.exportAllToJSON}.
+   * Each save receives a fresh ID; duplicate detection is left to the caller.
+   * @param {string} jsonString
+   * @returns {SaveProfile[]} The newly created profiles, one per save in the backup.
+   * @throws {Error} If the JSON is malformed or the saves array is missing.
+   */
   importAllFromJSON(jsonString) {
     let data;
     try {

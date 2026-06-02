@@ -1,4 +1,13 @@
-// app.js — entry point: SW registration, data init, top-level router.
+/**
+ * @module app
+ * @description Application entry point.
+ *
+ * Responsibilities:
+ *  1. Registers the service worker for offline support and PWA install eligibility.
+ *  2. Initialises {@link module:save-manager~SaveManager} with the DLC registry so
+ *     import/export operations can validate DLC references.
+ *  3. Drives the two-screen router: save list → per-save dashboard.
+ */
 
 import { DLC_REGISTRY } from './data/dlc-registry.js';
 import { SaveManager } from './modules/save-manager.js';
@@ -18,6 +27,12 @@ SaveManager.init(DLC_REGISTRY);
 
 const app = document.getElementById('app');
 
+/**
+ * Clears the app container and renders the named view.
+ * @param {'save-manager'|'dashboard'} view
+ * @param {Object}  [params={}]
+ * @param {string}  [params.saveId] - Required when `view` is `'dashboard'`.
+ */
 function navigate(view, params = {}) {
   app.innerHTML = '';
   if (view === 'save-manager') {

@@ -1,7 +1,8 @@
 // Service Worker — enables offline use and home screen installation.
 // Cache-first strategy: all app assets are local so network is never needed at runtime.
+// Bump CACHE_NAME version string whenever assets change to invalidate the old cache.
 
-const CACHE_NAME = 'anno117-companion-v1';
+const CACHE_NAME = 'anno117-companion-v3';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -13,11 +14,24 @@ const ASSETS_TO_CACHE = [
   './data/base-game.js',
   './data/dlc-registry.js',
   './modules/save-manager.js',
+  './modules/islands.js',
+  './modules/specialist-tracker.js',
+  './modules/goods-tracker.js',
+  './modules/building-tracker.js',
+  './modules/festival-tracker.js',
+  './modules/production-ref.js',
+  './modules/import-export.js',
   './components/modal.js',
   './components/toast.js',
   './components/bottom-nav.js',
   './views/save-manager.js',
   './views/dashboard.js',
+  './views/specialists-view.js',
+  './views/goods-view.js',
+  './views/buildings-view.js',
+  './views/festivals-view.js',
+  './views/reference-view.js',
+  './views/settings-view.js',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-512-maskable.png',

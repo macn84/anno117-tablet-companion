@@ -18,8 +18,12 @@ and it works fully offline, no internet connection needed after the first load.
 ## Features
 
 - **Save File Manager** — create and switch between independent profiles, one per playthrough
-- **Specialist Tracker** — log your specialists with rarity, category, island, and slot assignment
-- **Goods Tracker** — mark each good per island as Surplus / Stable / Deficit / Not Produced
+- **Specialist Tracker** — search known specialists, add custom ones, assign to islands and slots, filter by rarity and category
+- **Goods Tracker** — mark each good per island as Surplus / Stable / Deficit / Not Produced; includes a cross-island summary table
+- **Overview** — live count of deficits and unassigned specialists per save
+- **Island Manager** — add, rename, and delete islands per save file
+
+Coming in the next update:
 - **Building Tracker** — record which structures each island has and their specialist slots
 - **Festival Tracker** — toggle active festivals and add personal timing notes
 - **Reference Tab** — searchable read-only wiki: specialists, goods, production chains, buildings, festivals
@@ -137,8 +141,10 @@ Export files contain user data only (no game content). Safe to share between dev
 
 ## Data storage
 
-All user data is stored in **localStorage** under namespaced keys, isolated per save file.
-No data leaks between saves. Updating game content files never touches user data.
+All user data is stored in the browser's **localStorage** under namespaced keys
+(`islands:{saveId}`, `specialists:{saveId}`, `goods:{saveId}`, etc.), fully isolated
+per save file. No data leaks between saves. Updating game content files never
+touches user data.
 
 ---
 

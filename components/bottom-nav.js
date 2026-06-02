@@ -1,5 +1,21 @@
-// Bottom tab navigation — always visible within the save dashboard.
+/**
+ * @module bottom-nav
+ * @description Persistent bottom tab bar rendered within the save dashboard.
+ * {@link BottomNav.render} returns a detached `<nav>` element; the caller is
+ * responsible for appending it to the DOM.
+ */
 
+/**
+ * @typedef {Object} Tab
+ * @property {string} id    - Unique route identifier (e.g. `'overview'`, `'goods'`).
+ * @property {string} label - Human-readable tab label shown below the icon.
+ * @property {string} icon  - Emoji icon rendered above the label.
+ */
+
+/**
+ * Tab definitions in display order.
+ * @type {Tab[]}
+ */
 export const TABS = [
   { id: 'overview',    label: 'Overview',    icon: '🏛' },
   { id: 'specialists', label: 'Specialists', icon: '👤' },
@@ -11,6 +27,14 @@ export const TABS = [
 ];
 
 export const BottomNav = {
+  /**
+   * Renders the nav bar as a detached DOM element ready to be appended.
+   * Tab-change events are delegated to the `<nav>` root; clicking the already
+   * active tab is silently ignored.
+   * @param {string}                   activeTab  - ID of the initially selected tab.
+   * @param {function(string): void}   onTabChange - Called with the newly selected tab ID.
+   * @returns {HTMLElement} A `<nav>` element.
+   */
   render(activeTab, onTabChange) {
     const nav = document.createElement('nav');
     nav.className = 'bottom-nav';

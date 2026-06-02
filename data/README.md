@@ -9,10 +9,10 @@ Source of truth: [anno.land](https://anno.land/en/anno-117-datenbanken/)
 
 ## Adding a new DLC
 
-**Export a backup first** (Settings → Export All Saves) before editing any data file.
+**Export a backup first** (Settings → Export Save or Export All Saves) before editing any data file.
 
 1. Create `/data/dlc/dlc-XX-name.js` using the template in `/data/dlc/README.md`
-2. Register the import in `app.js` alongside the existing DLC imports
+2. Register it in `data/dlc-registry.js` (one import + one array entry — see the comments there)
 3. The DLC will now appear in every save's DLC toggle list automatically
 
 ## Updating base game data
