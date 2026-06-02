@@ -1,25 +1,35 @@
-// app.js — entry point: service worker registration, app boot, top-level routing
+// app.js — entry point: SW registration, data init, top-level router.
 
-// Register service worker (absolute path ensures correct scope on GitHub Pages)
+import { DLC_REGISTRY } from './data/dlc-registry.js';
+import { SaveManager } from './modules/save-manager.js';
+import { SaveManagerView } from './views/save-manager.js';
+import { DashboardView } from './views/dashboard.js';
+
+// Register service worker.
+// Uses relative path so it works both at domain root and in a subdirectory (e.g. GitHub Pages).
 if ('serviceWorker' in navigator) {
-	navigator.serviceWorker.register('/sw.js')
-		.then(reg => console.log('Service worker registered:', reg.scope))
-		.catch(err => console.warn('Service worker registration failed:', err));
+  navigator.serviceWorker.register('./sw.js')
+    .then(reg => console.log('SW registered, scope:', reg.scope))
+    .catch(err => console.warn('SW registration failed:', err));
 }
 
-// TODO: define route constants
-// ROUTES = { SAVE_MANAGER, DASHBOARD, ... }
+// Initialise SaveManager with the DLC registry so import/export warnings work.
+SaveManager.init(DLC_REGISTRY);
 
-// TODO: implement router
-// - reads a route from a module-level variable (no hash/URL routing needed;
-//   all navigation is in-memory since this is a single-page offline app)
-// - calls renderView(route, params) which replaces #app innerHTML
+const app = document.getElementById('app');
 
-// TODO: implement renderView(route, params)
-// - SAVE_MANAGER  → SaveManagerView.render()
-// - DASHBOARD     → DashboardView.render(saveId)
-// (individual tab views are rendered by DashboardView, not by the top-level router)
+function navigate(view, params = {}) {
+  app.innerHTML = '';
+  if (view === 'save-manager') {
+    SaveManagerView.render(app, {
+      onOpen: (saveId) => navigate('dashboard', { saveId }),
+    });
+  } else if (view === 'dashboard') {
+    DashboardView.render(app, {
+      saveId: params.saveId,
+      onBack: () => navigate('save-manager'),
+    });
+  }
+}
 
-// TODO: boot sequence
-// 1. StorageService.init() — detect localStorage vs IndexedDB capacity
-// 2. navigate to SAVE_MANAGER
+navigate('save-manager');

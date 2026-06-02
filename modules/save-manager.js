@@ -1,4 +1,4 @@
-// js/saves.js — save file profile CRUD
+// modules/save-manager.js — save file profile CRUD
 //
 // Storage key convention:  'save:{saveId}'
 // Index of all save IDs:   'saves:index'  →  string[]
@@ -15,30 +15,199 @@
 // Island, specialist, goods, and building data are stored under separate keys
 // namespaced by saveId, managed by their respective modules.
 
-const SavesService = {
+// Child-data key prefixes that must be cleaned up when a save is deleted.
+const CHILD_KEY_PREFIXES = [
+  'islands:',
+  'specialists:',
+  'goods:',
+  'buildings:',
+  'festivals:',
+];
 
-  // TODO: implement listAll() → SaveProfile[]
-  listAll() {},
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
 
-  // TODO: implement create(name, activeDlcIds) → SaveProfile
-  create(name, activeDlcIds) {},
+function readIndex() {
+  try {
+    return JSON.parse(localStorage.getItem('saves:index') || '[]');
+  } catch {
+    return [];
+  }
+}
 
-  // TODO: implement get(saveId) → SaveProfile | null
-  get(saveId) {},
+function writeIndex(ids) {
+  localStorage.setItem('saves:index', JSON.stringify(ids));
+}
 
-  // TODO: implement update(saveId, patch) — merges patch into existing profile
-  update(saveId, patch) {},
+function readSave(saveId) {
+  try {
+    return JSON.parse(localStorage.getItem(`save:${saveId}`));
+  } catch {
+    return null;
+  }
+}
 
-  // TODO: implement delete(saveId)
-  // Must also delete all child data:  islands, specialists, goods, buildings
-  // keyed under this saveId. Enumerate with StorageService.keys() and filter.
-  delete(saveId) {},
+function writeSave(profile) {
+  localStorage.setItem(`save:${profile.id}`, JSON.stringify(profile));
+}
 
-  // TODO: implement exportToJSON(saveId) → JSON string
-  // Bundles the save profile + all child data into a single portable object.
-  exportToJSON(saveId) {},
+function readChildKey(prefix, saveId) {
+  try {
+    return JSON.parse(localStorage.getItem(`${prefix}${saveId}`) || 'null');
+  } catch {
+    return null;
+  }
+}
 
-  // TODO: implement importFromJSON(jsonString) → SaveProfile
-  // Validates shape before writing. Assigns a new saveId to avoid collisions.
-  importFromJSON(jsonString) {},
+const SaveManager = {
+
+  _dlcRegistry: [],
+
+  init(dlcRegistry = []) {
+    this._dlcRegistry = dlcRegistry;
+  },
+
+  listAll() {
+    const ids = readIndex();
+    return ids
+      .map(readSave)
+      .filter(Boolean)
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  },
+
+  create(name, activeDlcIds = []) {
+    const now = new Date().toISOString();
+    const profile = {
+      id: uid(),
+      name: name.trim(),
+      createdAt: now,
+      updatedAt: now,
+      activeDlcIds: [...activeDlcIds],
+    };
+    writeSave(profile);
+    const ids = readIndex();
+    ids.push(profile.id);
+    writeIndex(ids);
+    return profile;
+  },
+
+  get(saveId) {
+    return readSave(saveId);
+  },
+
+  update(saveId, patch) {
+    const profile = readSave(saveId);
+    if (!profile) throw new Error(`Save not found: ${saveId}`);
+    const updated = { ...profile, ...patch, id: saveId, updatedAt: new Date().toISOString() };
+    writeSave(updated);
+    return updated;
+  },
+
+  delete(saveId) {
+    // Remove child data first
+    for (const prefix of CHILD_KEY_PREFIXES) {
+      localStorage.removeItem(`${prefix}${saveId}`);
+    }
+    // Remove profile
+    localStorage.removeItem(`save:${saveId}`);
+    // Remove from index
+    const ids = readIndex().filter((id) => id !== saveId);
+    writeIndex(ids);
+  },
+
+  exportToJSON(saveId) {
+    const profile = readSave(saveId);
+    if (!profile) throw new Error(`Save not found: ${saveId}`);
+
+    const bundle = {
+      exportVersion: 1,
+      exportedAt: new Date().toISOString(),
+      profile,
+      childData: {},
+    };
+
+    for (const prefix of CHILD_KEY_PREFIXES) {
+      const data = readChildKey(prefix, saveId);
+      if (data !== null) {
+        // Strip trailing ':' for the bundle key, e.g. 'islands:' → 'islands'
+        bundle.childData[prefix.slice(0, -1)] = data;
+      }
+    }
+
+    return JSON.stringify(bundle, null, 2);
+  },
+
+  importFromJSON(jsonString) {
+    let bundle;
+    try {
+      bundle = JSON.parse(jsonString);
+    } catch {
+      throw new Error('Invalid JSON — could not parse save file.');
+    }
+
+    if (!bundle.exportVersion || !bundle.profile) {
+      throw new Error('Unrecognised save format — missing exportVersion or profile.');
+    }
+
+    const { profile, childData = {} } = bundle;
+
+    if (!profile.name || !profile.createdAt) {
+      throw new Error('Save profile is missing required fields (name, createdAt).');
+    }
+
+    // Warn about inactive DLCs referenced in this save
+    const unknownDlcs = (profile.activeDlcIds || []).filter((id) => {
+      if (!SaveManager._dlcRegistry) return false;
+      return !SaveManager._dlcRegistry.some((dlc) => dlc.id === id);
+    });
+    if (unknownDlcs.length > 0) {
+      console.warn('Imported save references DLC IDs not in current registry:', unknownDlcs);
+    }
+
+    // Assign a new ID to avoid collision with any existing save
+    const newId = uid();
+    const now = new Date().toISOString();
+    const imported = {
+      ...profile,
+      id: newId,
+      name: `${profile.name} (imported)`,
+      updatedAt: now,
+    };
+
+    writeSave(imported);
+    const ids = readIndex();
+    ids.push(newId);
+    writeIndex(ids);
+
+    // Restore child data under the new ID
+    for (const [key, data] of Object.entries(childData)) {
+      localStorage.setItem(`${key}:${newId}`, JSON.stringify(data));
+    }
+
+    return imported;
+  },
+
+  // Convenience: export every save as one JSON backup file.
+  exportAllToJSON() {
+    const saves = this.listAll();
+    const bundles = saves.map((s) => JSON.parse(this.exportToJSON(s.id)));
+    return JSON.stringify({ exportVersion: 1, exportedAt: new Date().toISOString(), saves: bundles }, null, 2);
+  },
+
+  // Import a full backup produced by exportAllToJSON. Returns array of imported profiles.
+  importAllFromJSON(jsonString) {
+    let data;
+    try {
+      data = JSON.parse(jsonString);
+    } catch {
+      throw new Error('Invalid JSON — could not parse backup file.');
+    }
+    if (!Array.isArray(data.saves)) {
+      throw new Error('Unrecognised backup format — missing saves array.');
+    }
+    return data.saves.map((bundle) => this.importFromJSON(JSON.stringify(bundle)));
+  },
 };
+
+export { SaveManager };
