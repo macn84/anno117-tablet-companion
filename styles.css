@@ -1,27 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
 /* ============================================================
-   CSS Custom Properties — dark theme, tablet-first sizing
+   CSS Custom Properties — Anno navy/bronze dark theme
    ============================================================ */
 
 :root {
-  /* Colours */
-  --color-bg:           #1a1a2e;
-  --color-surface:      #16213e;
-  --color-surface-2:    #0f3460;
-  --color-accent:       #e94560;
-  --color-text:         #e0e0e0;
-  --color-text-muted:   #888;
-  --color-border:       #2a2a4a;
+  /* Colours — navy backgrounds, bronze accents, warm parchment text */
+  --color-bg:           #0a0518;   /* deep wine-navy */
+  --color-surface:      #1e0a28;   /* dark wine */
+  --color-surface-2:    #2c1438;   /* wine/plum */
+  --color-accent:       #b88a53;   /* bronze-500 */
+  --color-accent-light: #c69a65;   /* bronze-400 */
+  --color-text:         #fff7f1;   /* warm parchment white */
+  --color-text-muted:   #9a8a7a;   /* warm muted tone */
+  --color-border:       rgba(184,138,83,0.2);  /* subtle bronze border */
 
   /* Rarity colours */
   --color-rarity-common:     #9e9e9e;
-  --color-rarity-rare:       #2196f3;
-  --color-rarity-epic:       #9c27b0;
-  --color-rarity-legendary:  #ff9800;
+  --color-rarity-rare:       #4d9ef0;
+  --color-rarity-epic:       #b06cd1;
+  --color-rarity-legendary:  #d4a032;
 
   /* Trend colours (goods tracker) */
-  --color-surplus:   #4caf50;
-  --color-stable:    #ff9800;
-  --color-deficit:   #f44336;
+  --color-surplus:   #6d9e5a;
+  --color-stable:    #c69a65;
+  --color-deficit:   #c25555;
 
   /* Layout */
   --tap-target:       48px;
@@ -33,7 +36,9 @@
   --spacing-xl:       32px;
 
   /* Typography */
-  --font-family:      system-ui, sans-serif;
+  --font-heading:     "Cinzel", "Cormorant Garamond", Georgia, serif;
+  --font-body:        Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-family:      var(--font-body);
   --font-size-sm:     14px;
   --font-size-md:     16px;
   --font-size-lg:     20px;
@@ -56,12 +61,17 @@ html, body {
 }
 
 body {
-  font-family: var(--font-family);
+  font-family: var(--font-body);
   font-size: var(--font-size-md);
   color: var(--color-text);
   background-color: var(--color-bg);
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: 0.02em;
 }
 
 button {
@@ -282,6 +292,18 @@ ul {
   border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: var(--spacing-md);
+  position: relative;
+  overflow: hidden;
+}
+
+.save-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light), var(--color-accent));
 }
 
 .save-card__name {
@@ -977,4 +999,359 @@ ul {
 @keyframes skeleton-shimmer {
   from { background-position: 200% 0; }
   to   { background-position: -200% 0; }
+}
+
+/* ============================================================
+   Phase 2 additions — Core tracking features
+   ============================================================ */
+
+/* ── Filter toolbar ─────────────────────────────────────────── */
+
+.tab-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0 var(--spacing-md);
+}
+
+.chip-row {
+  display: flex;
+  gap: var(--spacing-xs);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.chip-row::-webkit-scrollbar { display: none; }
+
+/* BEM modifier alias — both .chip.active and .chip--active work */
+.chip--active,
+.chip.active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+
+/* ── Rarity badge colour aliases ────────────────────────────── */
+
+.rarity-badge.rarity-common    { color: var(--color-rarity-common);    background: rgba(158,158,158,0.15); }
+.rarity-badge.rarity-rare      { color: var(--color-rarity-rare);      background: rgba(33,150,243,0.15); }
+.rarity-badge.rarity-epic      { color: var(--color-rarity-epic);      background: rgba(156,39,176,0.15); }
+.rarity-badge.rarity-legendary { color: var(--color-rarity-legendary); background: rgba(255,152,0,0.15); }
+
+/* ── Trend badge colour aliases ─────────────────────────────── */
+
+.trend-badge.trend-surplus      { color: var(--color-surplus);    background: rgba(76,175,80,0.15); }
+.trend-badge.trend-stable       { color: var(--color-stable);     background: rgba(255,152,0,0.15); }
+.trend-badge.trend-deficit      { color: var(--color-deficit);    background: rgba(244,67,54,0.15); }
+.trend-badge.trend-not-produced { color: var(--color-text-muted); background: transparent; }
+.trend-badge.trend-unset        { color: var(--color-text-muted); background: transparent; font-weight: 400; }
+
+/* ── Specialist view ────────────────────────────────────────── */
+
+.specialist-group__label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--spacing-sm);
+}
+
+.specialist-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: 2px;
+}
+
+.specialist-card__header .specialist-card__name {
+  flex: 1;
+}
+
+.specialist-card__meta {
+  padding-left: 0;
+}
+
+.specialist-card__location {
+  font-weight: 600;
+  color: var(--color-text);
+  margin-top: 2px;
+}
+
+.input-search {
+  width: 100%;
+  padding-left: calc(var(--spacing-md) + 20px);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: var(--spacing-sm) center;
+  background-size: 16px;
+}
+
+.card__notes {
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Typeahead results */
+.search-results {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  margin-top: 4px;
+  background: var(--color-surface-2);
+}
+
+.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  min-height: var(--tap-target);
+  font-size: var(--font-size-sm);
+}
+
+.search-result-item:hover,
+.search-result-item:active {
+  background: var(--color-border);
+}
+
+/* Form labels inside modals */
+.form-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin: var(--spacing-sm) 0 4px;
+  font-weight: 600;
+}
+
+/* ── Goods view ─────────────────────────────────────────────── */
+
+.goods-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+}
+
+.goods-row__main {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  min-height: var(--tap-target);
+  cursor: pointer;
+}
+
+.goods-row__name {
+  flex: 1;
+}
+
+.goods-row__status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.goods-note {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.goods-row--expanded {
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.trend-picker {
+  padding: var(--spacing-sm) 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.stock-note-input {
+  font-size: var(--font-size-sm);
+  height: 36px;
+  padding: 0 var(--spacing-sm);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text);
+}
+
+/* Summary table */
+.summary-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+}
+
+.summary-table {
+  width: max-content;
+  border-collapse: collapse;
+  min-width: 100%;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+  min-width: 80px;
+  text-align: center;
+}
+
+.summary-table th {
+  background: var(--color-surface-2);
+  font-weight: 700;
+  position: sticky;
+  top: 0;
+}
+
+.goods-name-cell {
+  text-align: left !important;
+  position: sticky;
+  left: 0;
+  background: var(--color-surface);
+  z-index: 1;
+  min-width: 130px !important;
+  font-weight: 500;
+}
+
+.summary-cell {
+  text-align: center;
+}
+
+/* ── Overview tab ───────────────────────────────────────────── */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--color-surface-2);
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: var(--spacing-xs);
+  vertical-align: middle;
+}
+
+.badge--alert {
+  background: rgba(244,67,54,0.2);
+  color: var(--color-deficit);
+}
+
+.island-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.island-row:last-of-type { border-bottom: none; }
+
+.island-row__name { flex: 1; font-weight: 500; }
+
+.deficit-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-xs) 0;
+}
+
+/* ── Settings view ──────────────────────────────────────────── */
+
+.settings-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding-bottom: var(--spacing-xl);
+}
+
+.settings-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--spacing-md);
+}
+
+.settings-card--danger {
+  border-color: var(--color-deficit);
+}
+
+.settings-card--muted {
+  opacity: 0.6;
+}
+
+.settings-card__title {
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  margin-bottom: var(--spacing-sm);
+}
+
+.settings-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  margin-top: var(--spacing-sm);
+}
+
+/* Island list items */
+.island-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border);
+  min-height: var(--tap-target);
+}
+
+.island-item:last-of-type { border-bottom: none; }
+
+.island-item--editing { flex-wrap: wrap; gap: var(--spacing-sm); }
+
+.island-item__info { flex: 1; }
+.island-item__name { font-weight: 500; display: block; }
+.island-item__region { display: block; }
+.island-item__actions { display: flex; gap: var(--spacing-sm); flex-shrink: 0; }
+
+.island-rename-input {
+  flex: 1;
+  height: 40px;
+  padding: 0 var(--spacing-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-accent);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+  min-width: 0;
+}
+
+/* Add island form */
+.add-island-form {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.add-island-form input {
+  flex: 1;
+  min-width: 140px;
+}
+
+.add-island-form select {
+  flex-shrink: 0;
 }

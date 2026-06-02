@@ -1,24 +1,18 @@
-// views/buildings-view.js — Building Tracker tab
+// views/buildings-view.js — Building Tracker tab.
+//
+// Displays per-island building counts and notes. Each building type row shows
+// its specialist slot count (from buildingTypes data) to help with specialist planning.
+//
+// Planned for Phase 3. See plan.md for implementation spec.
 
-const BuildingsView = {
-
-  // TODO: implement render(saveId)
-  // Island accordion list.
-  // Each island section shows its buildings as rows:
-  //   building type name | user label (if set) | specialist slots used/total | edit icon
-  // FAB per island section (or global) → add building modal
-  render(saveId) {},
-
-  // TODO: implement renderAddEditModal(saveId, islandId, building?)
-  // Fields:
-  //   - Building type (dropdown from merged base + DLC buildingTypes)
-  //   - Label (optional text, e.g. "North Harbour")
-  renderAddEditModal(saveId, islandId, building) {},
-
-  // TODO: implement handleSave(saveId, islandId, fields, existingId?)
-  handleSave(saveId, islandId, fields, existingId) {},
-
-  // TODO: implement handleDelete(saveId, buildingId)
-  // Warn user if specialists are assigned to this building before deleting.
-  handleDelete(saveId, buildingId) {},
+export const BuildingsView = {
+  render(container, { saveId }) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state__icon">🏗</div>
+        <p>Building Tracker</p>
+        <p class="text-sm">Coming in the next update</p>
+      </div>
+    `;
+  },
 };

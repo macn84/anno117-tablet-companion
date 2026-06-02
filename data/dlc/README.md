@@ -45,13 +45,15 @@ export const DLC_XX = {
 
 ## Registering the DLC
 
-After creating the file, add one line to `app.js`:
+After creating the file, open `data/dlc-registry.js` and:
 
-```javascript
-import { DLC_XX } from './data/dlc/dlc-XX-name.js';
-```
+1. Add one import at the top:
+   ```javascript
+   import { DLC_XX } from './dlc/dlc-XX-name.js';
+   ```
+2. Add `{ id: 'dlc-XX', name: 'DLC Name Here', data: DLC_XX }` to the `DLC_REGISTRY` array.
 
-Then add `DLC_XX` to the `ALL_DLCS` array in the same file. That is the only code change needed.
+That is the only code change needed.
 
 ## Rules
 

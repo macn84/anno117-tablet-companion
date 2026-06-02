@@ -1,33 +1,64 @@
-// js/buildings.js — building tracker per save
-//
-// Storage key: 'buildings:{saveId}'  →  BuildingEntry[]
-//
-// BuildingEntry shape:
-// {
-//   id:             string,
-//   islandId:       string,
-//   buildingTypeId: string,  // references buildingTypes in base-game or active DLC
-//   label:          string,  // optional user-given name (e.g. "North Harbour")
-// }
-//
-// Primarily used to know "which specialist-holding structures exist on each island"
-// so the specialist assignment picker can offer them as targets.
+/**
+ * @module building-tracker
+ * @description Building count and notes tracking per island per save file.
+ *
+ * Data will be stored in localStorage under `buildings:{saveId}` as a JSON array.
+ * Each entry records how many of a given building type exist on an island, plus
+ * optional free-form notes (e.g. specialist slot occupancy).
+ *
+ * @todo Phase 3 implementation pending.
+ */
 
-const BuildingsService = {
+/**
+ * @typedef {Object} BuildingEntry
+ * @property {string} id             - Stable entry ID.
+ * @property {string} islandId       - References an island within the same save.
+ * @property {string} buildingTypeId - References a building type from game data.
+ * @property {number} count          - Number of this building type on the island.
+ * @property {string} notes          - Free-form user notes.
+ */
 
-  // TODO: implement list(saveId) → BuildingEntry[]
-  list(saveId) {},
+export const BuildingTracker = {
 
-  // TODO: implement listByIsland(saveId, islandId) → BuildingEntry[]
-  listByIsland(saveId, islandId) {},
+  /**
+   * Returns all building entries for a save.
+   * @param {string} saveId
+   * @returns {BuildingEntry[]}
+   */
+  list(saveId) { return []; },
 
-  // TODO: implement add(saveId, islandId, buildingTypeId, label) → BuildingEntry
-  add(saveId, islandId, buildingTypeId, label) {},
+  /**
+   * Returns building entries for a specific island.
+   * @param {string} saveId
+   * @param {string} islandId
+   * @returns {BuildingEntry[]}
+   */
+  listByIsland(saveId, islandId) { return []; },
 
-  // TODO: implement update(saveId, buildingId, patch)
-  update(saveId, buildingId, patch) {},
+  /**
+   * Creates a new building entry for an island.
+   * @param {string} saveId
+   * @param {string} islandId
+   * @param {string} buildingTypeId
+   * @param {number} count
+   * @param {string} [notes='']
+   * @returns {BuildingEntry|null}
+   */
+  add(saveId, islandId, buildingTypeId, count, notes) { return null; },
 
-  // TODO: implement delete(saveId, buildingId)
-  // Should also clear specialist assignments pointing to this building.
-  delete(saveId, buildingId) {},
+  /**
+   * Shallow-merges `patch` into an existing building entry.
+   * @param {string}                      saveId
+   * @param {string}                      entryId
+   * @param {Partial<BuildingEntry>}       patch
+   * @returns {BuildingEntry|null}
+   */
+  update(saveId, entryId, patch) { return null; },
+
+  /**
+   * Permanently removes a building entry.
+   * @param {string} saveId
+   * @param {string} entryId
+   */
+  remove(saveId, entryId) {},
 };

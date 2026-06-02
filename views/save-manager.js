@@ -1,4 +1,8 @@
-// views/save-manager.js — Home screen: list, create, export, and delete saves.
+/**
+ * @module save-manager-view
+ * @description Home screen: list, create, export, and delete save profiles.
+ * This is the entry point of the app — no save is open at this level.
+ */
 
 import { SaveManager } from '../modules/save-manager.js';
 import { Modal } from '../components/modal.js';
@@ -28,6 +32,12 @@ export const SaveManagerView = {
   _container: null,
   _onOpen: null,
 
+  /**
+   * Renders the save manager screen into the given container.
+   * @param {HTMLElement}              container
+   * @param {Object}                   options
+   * @param {function(string): void}   options.onOpen - Called with the save ID when a save is opened.
+   */
   render(container, { onOpen }) {
     this._container = container;
     this._onOpen = onOpen;

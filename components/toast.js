@@ -1,4 +1,9 @@
-// Toast notification system — stacks at top of screen, auto-dismisses.
+/**
+ * @module toast
+ * @description Stacked toast notification system. Toasts auto-dismiss after a
+ * configurable delay and are appended to a shared container at the top of
+ * `document.body` (created lazily on first use).
+ */
 
 let _container = null;
 
@@ -12,6 +17,12 @@ function ensureContainer() {
 }
 
 export const Toast = {
+  /**
+   * Shows a toast notification.
+   * @param {string} message
+   * @param {string} [type='']       - CSS BEM modifier suffix (e.g. `'success'`, `'error'`).
+   * @param {number} [duration=2500] - Auto-dismiss delay in milliseconds.
+   */
   show(message, type = '', duration = 2500) {
     const container = ensureContainer();
     const el = document.createElement('div');
@@ -21,6 +32,8 @@ export const Toast = {
     setTimeout(() => el.remove(), duration);
   },
 
+  /** @param {string} msg - Auto-dismisses after 2.5 s. */
   success(msg) { this.show(msg, 'success'); },
+  /** @param {string} msg - Auto-dismisses after 4 s (errors warrant longer visibility). */
   error(msg)   { this.show(msg, 'error', 4000); },
 };
