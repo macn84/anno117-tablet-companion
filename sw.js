@@ -1,44 +1,63 @@
-// Service Worker — enables offline use and home screen installation
+// Service Worker — enables offline use and home screen installation.
+// Cache-first strategy: all app assets are local so network is never needed at runtime.
 
 const CACHE_NAME = 'anno117-companion-v1';
 
-// TODO: keep this list in sync with all script/style/asset files in index.html
 const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/styles.css',
-  '/app.js',
-  '/data/base-game.js',
-  '/data/dlc-registry.js',
-  '/js/storage.js',
-  '/js/saves.js',
-  '/js/islands.js',
-  '/js/specialists.js',
-  '/js/goods.js',
-  '/js/buildings.js',
-  '/views/save-manager.js',
-  '/views/dashboard.js',
-  '/views/specialists-view.js',
-  '/views/goods-view.js',
-  '/views/buildings-view.js',
-  '/views/settings-view.js',
-  // TODO: add icon paths once icons are created
+  './',
+  './index.html',
+  './404.html',
+  './manifest.json',
+  './styles.css',
+  './app.js',
+  './data/base-game.js',
+  './data/dlc-registry.js',
+  './modules/save-manager.js',
+  './components/modal.js',
+  './components/toast.js',
+  './components/bottom-nav.js',
+  './views/save-manager.js',
+  './views/dashboard.js',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-512-maskable.png',
 ];
 
-// install: pre-cache all static assets
 self.addEventListener('install', (event) => {
-  // TODO: implement cache population
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS_TO_CACHE))
+  );
+  self.skipWaiting();
 });
 
-// activate: clean up old cache versions
 self.addEventListener('activate', (event) => {
-  // TODO: delete caches where key !== CACHE_NAME
+  event.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(
+        keys
+          .filter((key) => key !== CACHE_NAME)
+          .map((key) => caches.delete(key))
+      )
+    )
+  );
+  self.clients.claim();
 });
 
-// fetch: cache-first strategy — serve from cache, fall back to network
 self.addEventListener('fetch', (event) => {
-  // TODO: implement cache-first fetch handler
-  // No network requests are expected at runtime (all data is local),
-  // so a pure cache-first strategy should be safe here.
+  if (event.request.method !== 'GET') return;
+
+  event.respondWith(
+    caches.match(event.request).then((cached) => {
+      if (cached) return cached;
+
+      return fetch(event.request).then((response) => {
+        if (!response || response.status !== 200 || response.type !== 'basic') {
+          return response;
+        }
+        const toCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, toCache));
+        return response;
+      });
+    })
+  );
 });

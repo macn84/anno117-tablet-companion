@@ -4,45 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#1a1a2e" />
+  <meta name="description" content="Offline companion app for Anno 117: Pax Romana" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Anno 117" />
 
-  <!-- TODO: finalise app name / description for PWA metadata -->
   <title>Anno 117 Companion</title>
+
   <link rel="manifest" href="manifest.json" />
-
-  <!-- TODO: create and link app icons (192px, 512px, maskable) -->
-  <!-- <link rel="apple-touch-icon" href="icons/icon-192.png" /> -->
-
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-
-  <!-- Root mount point — all views are rendered here by app.js -->
-  <div id="app">
-    <!-- TODO: add a minimal loading skeleton so the splash isn't a blank screen -->
-  </div>
-
-  <!-- Data layer — loaded first so views can reference definitions -->
-  <script src="data/base-game.js"></script>
-  <script src="data/dlc-registry.js"></script>
-
-  <!-- Core modules -->
-  <script src="js/storage.js"></script>
-  <script src="js/saves.js"></script>
-  <script src="js/islands.js"></script>
-  <script src="js/specialists.js"></script>
-  <script src="js/goods.js"></script>
-  <script src="js/buildings.js"></script>
-
-  <!-- Views -->
-  <script src="views/save-manager.js"></script>
-  <script src="views/dashboard.js"></script>
-  <script src="views/specialists-view.js"></script>
-  <script src="views/goods-view.js"></script>
-  <script src="views/buildings-view.js"></script>
-  <script src="views/settings-view.js"></script>
-
-  <!-- App entry point — registers service worker and boots routing -->
-  <script src="app.js"></script>
-
+  <div id="app"></div>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
