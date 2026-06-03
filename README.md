@@ -20,14 +20,12 @@ and it works fully offline, no internet connection needed after the first load.
 - **Save File Manager** — create and switch between independent profiles, one per playthrough
 - **Specialist Tracker** — search known specialists, add custom ones, assign to islands and slots, filter by rarity and category
 - **Goods Tracker** — mark each good per island as Surplus / Stable / Deficit / Not Produced; includes a cross-island summary table
-- **Overview** — live count of deficits and unassigned specialists per save
-- **Island Manager** — add, rename, and delete islands per save file
-
-Coming in the next update:
 - **Building Tracker** — record which structures each island has and their specialist slots
 - **Festival Tracker** — toggle active festivals and add personal timing notes
 - **Reference Tab** — searchable read-only wiki: specialists, goods, production chains, buildings, festivals
 - **DLC Manager** — toggle DLC content per save; your data is preserved even when a DLC is hidden
+- **Overview** — live count of deficits and unassigned specialists per save
+- **Island Manager** — add, rename, and delete islands per save file
 
 ---
 
