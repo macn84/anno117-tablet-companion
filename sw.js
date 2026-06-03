@@ -2,7 +2,7 @@
 // Cache-first strategy: all app assets are local so network is never needed at runtime.
 // Bump CACHE_NAME version string whenever assets change to invalidate the old cache.
 
-const CACHE_NAME = 'anno117-companion-v3';
+const CACHE_NAME = 'anno117-companion-v4';
 
 const ASSETS_TO_CACHE = [
   './',
@@ -13,6 +13,7 @@ const ASSETS_TO_CACHE = [
   './app.js',
   './data/base-game.js',
   './data/dlc-registry.js',
+  './data/dlc/dlc-01-prophecies-of-ash.js',
   './modules/save-manager.js',
   './modules/islands.js',
   './modules/specialist-tracker.js',

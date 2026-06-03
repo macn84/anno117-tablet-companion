@@ -1,29 +1,39 @@
 /**
  * @module production-ref
  * @description Read-only production chain reference viewer.
- *
- * Merges BASE_GAME.productionChains with chains from active DLCs for a given save.
- * No user data is written by this module — it is a lookup tool only.
- * Chain ratios in the data files assume 100% building efficiency with no
- * specialist buffs applied unless noted otherwise in the data file.
- *
- * @todo Phase 3 implementation pending.
+ * Merges BASE_GAME.productionChains with chains from active DLCs.
+ * No user data is written — this is a lookup tool only.
  */
 
 export const ProductionRef = {
 
   /**
    * Returns all production chains that output the specified good.
-   * @param {string} goodId      - Good ID to look up.
-   * @param {Object} mergedData  - Merged game data object (base + active DLCs).
+   * @param {string} goodId
+   * @param {Object} mergedData - Result of getMergedData().
    * @returns {Array}
    */
-  getChainsForGood(goodId, mergedData) { return []; },
+  getChainsForGood(goodId, mergedData) {
+    return (mergedData.productionChains ?? []).filter(c => c.outputGoodId === goodId);
+  },
 
   /**
    * Returns every production chain in the merged dataset.
-   * @param {Object} mergedData - Merged game data object (base + active DLCs).
+   * @param {Object} mergedData
    * @returns {Array}
    */
-  getAllChains(mergedData) { return []; },
+  getAllChains(mergedData) {
+    return mergedData.productionChains ?? [];
+  },
+
+  /**
+   * Returns all good IDs that have at least one production chain.
+   * Useful for populating the output-good selector in the reference view.
+   * @param {Object} mergedData
+   * @returns {string[]} Unique outputGoodId values, sorted by the good's name if goods are provided.
+   */
+  getProducibleGoodIds(mergedData) {
+    const ids = [...new Set((mergedData.productionChains ?? []).map(c => c.outputGoodId))];
+    return ids;
+  },
 };

@@ -1355,3 +1355,353 @@ ul {
 .add-island-form select {
   flex-shrink: 0;
 }
+
+/* ============================================================
+   Stage 3 — Buildings, Festivals, Reference, DLC
+   ============================================================ */
+
+/* ── Buildings tab ──────────────────────────────────────────── */
+
+.building-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.building-row {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: var(--spacing-sm) var(--spacing-md);
+}
+
+.building-row__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  min-height: 40px;
+  margin-bottom: var(--spacing-xs);
+}
+
+.building-row__name {
+  flex: 1;
+  font-weight: 600;
+}
+
+.building-row__slots {
+  font-size: var(--font-size-sm);
+}
+
+.building-row__controls {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.building-row__notes {
+  margin-top: 4px;
+}
+
+.building-notes-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 var(--spacing-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+/* Stepper control */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.stepper__btn {
+  width: 40px;
+  height: 40px;
+  background: var(--color-surface-2);
+  border: none;
+  color: var(--color-text);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stepper__btn:active { background: var(--color-border); }
+
+.stepper__value {
+  min-width: 40px;
+  text-align: center;
+  font-weight: 700;
+  font-size: var(--font-size-md);
+}
+
+/* Modal search input */
+.modal-search {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--spacing-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+}
+
+/* ── Festivals tab ──────────────────────────────────────────── */
+
+.festival-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.festival-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-border);
+  border-radius: 10px;
+  padding: var(--spacing-md);
+}
+
+.festival-card--active {
+  border-left-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-surface) 95%, var(--color-accent) 5%);
+}
+
+.festival-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.festival-card__title-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex: 1;
+}
+
+.festival-card__name {
+  font-weight: 700;
+}
+
+.festival-card__ref {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  background: var(--color-surface-2);
+  border-radius: 6px;
+}
+
+.festival-card__notes {
+  margin-top: 4px;
+}
+
+/* Toggle label (checkbox + text) */
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  white-space: nowrap;
+}
+
+.festival-toggle {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.festival-note-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 var(--spacing-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+}
+
+/* Region badge */
+.region-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+.region-badge--latium {
+  color: #c9a260;
+  background: rgba(201,162,96,0.12);
+  border-color: rgba(201,162,96,0.3);
+}
+
+.region-badge--albion {
+  color: #6ba3c9;
+  background: rgba(107,163,201,0.12);
+  border-color: rgba(107,163,201,0.3);
+}
+
+/* ── Reference tab ──────────────────────────────────────────── */
+
+.ref-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0 var(--spacing-md);
+}
+
+.ref-chips {
+  display: flex;
+  gap: var(--spacing-xs);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.ref-chips::-webkit-scrollbar { display: none; }
+
+.ref-search {
+  width: 100%;
+  height: 40px;
+  padding: 0 var(--spacing-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  font-size: var(--font-size-md);
+}
+
+.ref-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding-bottom: var(--spacing-xl);
+}
+
+.ref-empty {
+  padding: var(--spacing-md) 0;
+  text-align: center;
+}
+
+.ref-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ref-card__header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+
+.ref-card__name {
+  font-weight: 700;
+  flex: 1;
+}
+
+.ref-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--color-surface-2);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+/* Production chain section */
+.ref-chain-selector {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-sm);
+}
+
+.ref-chain {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.ref-chain__steps {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ref-chain__steps li {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.ref-chain__steps li:last-child { border-bottom: none; }
+
+.ref-chain__inputs {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+/* ── DLC Manager ────────────────────────────────────────────── */
+
+.dlc-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-sm);
+}
+
+.dlc-checkbox {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-accent);
+  cursor: pointer;
+  flex-shrink: 0;
+}
