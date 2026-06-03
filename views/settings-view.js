@@ -7,6 +7,8 @@
 import { BASE_GAME } from '../data/base-game.js';
 import { IslandsService } from '../modules/islands.js';
 import { SaveManager } from '../modules/save-manager.js';
+import { ImportExport } from '../modules/import-export.js';
+import { DLC_REGISTRY } from '../data/dlc-registry.js';
 import { Modal } from '../components/modal.js';
 import { Toast } from '../components/toast.js';
 
@@ -41,12 +43,13 @@ export const SettingsView = {
     this._container.innerHTML = `
       <div class="settings-sections">
         ${this._islandManagerHTML()}
-        ${this._comingSoonCard('DLC Manager', 'Toggle DLC content active or inactive per save.')}
+        ${this._dlcManagerHTML()}
         ${this._exportImportHTML()}
         ${this._dangerZoneHTML()}
       </div>
     `;
     this._bindIslandManager();
+    this._bindDlcManager();
     this._bindExportImport();
     this._bindDangerZone();
   },
@@ -169,6 +172,56 @@ export const SettingsView = {
     });
   },
 
+  // ── DLC Manager ──────────────────────────────────────────────────────────────
+
+  _dlcManagerHTML() {
+    if (DLC_REGISTRY.length === 0) {
+      return `
+        <section class="settings-card settings-card--muted">
+          <h2 class="settings-card__title">DLC Manager</h2>
+          <p class="text-sm text-muted">No DLC data files are registered.</p>
+        </section>
+      `;
+    }
+
+    const save = SaveManager.get(this._saveId);
+    const activeDlcIds = save?.activeDlcIds ?? [];
+
+    const rows = DLC_REGISTRY.map(dlc => `
+      <label class="dlc-toggle">
+        <input type="checkbox" class="dlc-checkbox" data-dlc-id="${escapeHtml(dlc.id)}" ${activeDlcIds.includes(dlc.id) ? 'checked' : ''}/>
+        <span class="dlc-toggle__name">${escapeHtml(dlc.name)}</span>
+        ${dlc.releaseDate ? `<span class="text-sm text-muted">${escapeHtml(dlc.releaseDate)}</span>` : ''}
+      </label>
+    `).join('');
+
+    return `
+      <section class="settings-card" id="dlc-manager-section">
+        <h2 class="settings-card__title">DLC Manager</h2>
+        <p class="text-sm text-muted">Toggle DLC content active or inactive for this save. Turning a DLC off hides its content but never deletes your data for it.</p>
+        <div class="dlc-list">${rows}</div>
+      </section>
+    `;
+  },
+
+  _bindDlcManager() {
+    this._container.querySelector('#dlc-manager-section')?.addEventListener('change', e => {
+      const checkbox = e.target.closest('.dlc-checkbox');
+      if (!checkbox) return;
+      const { dlcId } = checkbox.dataset;
+      const save = SaveManager.get(this._saveId);
+      const active = new Set(save?.activeDlcIds ?? []);
+      if (checkbox.checked) {
+        active.add(dlcId);
+      } else {
+        active.delete(dlcId);
+      }
+      SaveManager.update(this._saveId, { activeDlcIds: [...active] });
+      const dlc = DLC_REGISTRY.find(d => d.id === dlcId);
+      Toast.success(`${dlc?.name ?? dlcId} ${checkbox.checked ? 'enabled' : 'disabled'}`);
+    });
+  },
+
   // ── Export / Import ──────────────────────────────────────────────────────────
 
   _exportImportHTML() {
@@ -178,6 +231,7 @@ export const SettingsView = {
         <p class="text-sm text-muted">Download this save as a JSON file or restore from a previous export.</p>
         <div class="settings-actions">
           <button class="btn btn-secondary" id="btn-export-save">Export this save</button>
+          <button class="btn btn-secondary" id="btn-export-all">Export all saves</button>
           <label class="btn btn-secondary" style="cursor:pointer">
             Import save
             <input type="file" id="import-file" accept=".json" style="display:none"/>
@@ -200,6 +254,15 @@ export const SettingsView = {
         a.click();
         URL.revokeObjectURL(url);
         Toast.success('Save exported');
+      } catch (err) {
+        Toast.error('Export failed: ' + err.message);
+      }
+    });
+
+    this._container.querySelector('#btn-export-all')?.addEventListener('click', () => {
+      try {
+        ImportExport.downloadAllSaves();
+        Toast.success('All saves exported');
       } catch (err) {
         Toast.error('Export failed: ' + err.message);
       }
@@ -255,15 +318,4 @@ export const SettingsView = {
     });
   },
 
-  // ── Shared helpers ────────────────────────────────────────────────────────────
-
-  _comingSoonCard(title, description) {
-    return `
-      <section class="settings-card settings-card--muted">
-        <h2 class="settings-card__title">${escapeHtml(title)}</h2>
-        <p class="text-sm text-muted">${escapeHtml(description)}</p>
-        <p class="text-sm text-muted">Coming in a future update.</p>
-      </section>
-    `;
-  },
 };
