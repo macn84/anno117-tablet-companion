@@ -2,7 +2,7 @@
 // Cache-first strategy: all app assets are local so network is never needed at runtime.
 // Bump CACHE_NAME version string whenever assets change to invalidate the old cache.
 
-const CACHE_NAME = 'anno117-companion-v4';
+const CACHE_NAME = 'anno117-companion-v5';
 
 const ASSETS_TO_CACHE = [
   './',
