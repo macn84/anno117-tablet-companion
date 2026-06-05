@@ -14,6 +14,8 @@
  * @property {string} regionId - Region the island belongs to (e.g. `'latium'`, `'albion'`).
  */
 
+import { BuildingTracker } from './building-tracker.js';
+
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
@@ -101,5 +103,8 @@ export const IslandsService = {
       const pruned = goods.filter(g => g.islandId !== islandId);
       localStorage.setItem(`goods:${saveId}`, JSON.stringify(pruned));
     } catch { /* storage read failure is non-fatal */ }
+
+    // Clean up orphaned building entries for this island
+    BuildingTracker.removeByIsland(saveId, islandId);
   },
 };

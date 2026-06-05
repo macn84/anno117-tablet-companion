@@ -10,10 +10,11 @@
  * can be expanded at a time (`_expandedGoodId` tracks it).
  */
 
-import { BASE_GAME } from '../data/base-game.js';
 import { GoodsTracker, TRENDS } from '../modules/goods-tracker.js';
 import { IslandsService } from '../modules/islands.js';
 import { Toast } from '../components/toast.js';
+import { SaveManager } from '../modules/save-manager.js';
+import { getMergedData } from '../data/dlc-registry.js';
 
 const TREND_LABELS = {
   'Surplus':      '▲ Surplus',
@@ -41,6 +42,7 @@ export const GoodsView = {
   _activeView: 'by-island',   // 'by-island' | 'summary'
   _selectedIslandId: null,
   _expandedGoodId: null,      // which good row has the inline trend picker open
+  _gameData: null,
 
   /**
    * Renders the Goods tab into the given container.
@@ -61,6 +63,8 @@ export const GoodsView = {
   },
 
   _draw() {
+    const save = SaveManager.get(this._saveId);
+    this._gameData = getMergedData(save?.activeDlcIds ?? []);
     const islands = IslandsService.list(this._saveId);
 
     if (islands.length === 0) {
@@ -109,6 +113,7 @@ export const GoodsView = {
   },
 
   _drawByIsland(el, islands) {
+    if (islands.length === 0) return;
     if (!this._selectedIslandId || !islands.find(i => i.id === this._selectedIslandId)) {
       this._selectedIslandId = islands[0].id;
     }
@@ -122,7 +127,7 @@ export const GoodsView = {
 
     // Filter goods to those relevant to this island's region
     const region = island?.regionId;
-    const goods = BASE_GAME.goods.filter(g => !region || g.regions.includes(region));
+    const goods = this._gameData.goods.filter(g => !region || g.regions.includes(region));
 
     const goodsRows = goods.map(g => {
       const entry = entryMap[g.id];
@@ -204,7 +209,11 @@ export const GoodsView = {
         const note = noteInput?.value.trim() || '';
         const existing = GoodsTracker.getIslandSummary(this._saveId, this._selectedIslandId)
           .find(en => en.goodId === goodId);
-        GoodsTracker.setGoodStatus(this._saveId, goodId, this._selectedIslandId, existing?.trend || 'Stable', note);
+        if (!existing) {
+          Toast.show('Set a trend first, then add a note.');
+          return;
+        }
+        GoodsTracker.setGoodStatus(this._saveId, goodId, this._selectedIslandId, existing.trend, note);
         this._expandedGoodId = null;
         Toast.success('Note saved');
         this._drawByIsland(el, islands);
@@ -218,7 +227,7 @@ export const GoodsView = {
     const trackedGoodIds = new Set(
       Object.values(allSummary).flat().map(e => e.goodId)
     );
-    const goods = BASE_GAME.goods.filter(g => trackedGoodIds.has(g.id));
+    const goods = this._gameData.goods.filter(g => trackedGoodIds.has(g.id));
 
     if (goods.length === 0) {
       el.innerHTML = `<div class="empty-state"><p class="text-muted text-sm" style="padding:16px">No goods tracked yet. Switch to "By Island" to start tracking.</p></div>`;
