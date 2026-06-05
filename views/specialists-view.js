@@ -245,7 +245,7 @@ export const SpecialistsView = {
           <input type="text" id="spec-name" placeholder="Specialist name" value="${escapeHtml(currentName)}" autocomplete="off"/>
         </div>
         <input type="hidden" id="spec-id" value="${isEdit && !isCustom ? escapeHtml(existing.specialistId || '') : ''}"/>
-        <input type="hidden" id="spec-is-custom" value="${isCustom || (!isEdit) ? 'true' : 'false'}"/>
+        <input type="hidden" id="spec-is-custom" value="${isCustom ? 'true' : 'false'}"/>
         <label class="form-label" for="spec-rarity">Rarity</label>
         <select class="input-select" id="spec-rarity">${rarityOptions}</select>
         <label class="form-label" for="spec-category">Category</label>

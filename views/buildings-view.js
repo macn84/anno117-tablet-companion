@@ -4,11 +4,12 @@
  * Shows specialist slot info from buildingTypes data for planning purposes.
  */
 
-import { BASE_GAME } from '../data/base-game.js';
 import { BuildingTracker } from '../modules/building-tracker.js';
 import { IslandsService } from '../modules/islands.js';
 import { Modal } from '../components/modal.js';
 import { Toast } from '../components/toast.js';
+import { SaveManager } from '../modules/save-manager.js';
+import { getMergedData } from '../data/dlc-registry.js';
 
 function escapeHtml(str) {
   return String(str ?? '')
@@ -20,6 +21,7 @@ export const BuildingsView = {
   _saveId: null,
   _container: null,
   _selectedIslandId: null,
+  _gameData: null,
 
   /**
    * Renders the Buildings tab into the given container.
@@ -37,6 +39,8 @@ export const BuildingsView = {
   },
 
   _draw() {
+    const save = SaveManager.get(this._saveId);
+    this._gameData = getMergedData(save?.activeDlcIds ?? []);
     const islands = IslandsService.list(this._saveId);
 
     if (islands.length === 0) {
@@ -62,7 +66,7 @@ export const BuildingsView = {
     const rows = entries.length === 0
       ? `<p class="text-muted text-sm" style="padding:8px 0">No buildings tracked for this island yet.</p>`
       : entries.map(e => {
-          const bt = BASE_GAME.buildingTypes.find(b => b.id === e.buildingTypeId);
+          const bt = this._gameData.buildingTypes.find(b => b.id === e.buildingTypeId);
           const slots = bt?.specialistSlots ?? 0;
           const slotsLabel = slots > 0 ? `${slots} slot${slots !== 1 ? 's' : ''}` : 'No slots';
           return `
@@ -142,12 +146,12 @@ export const BuildingsView = {
     const island = IslandsService.list(this._saveId).find(i => i.id === this._selectedIslandId);
     const existingIds = BuildingTracker.listByIsland(this._saveId, this._selectedIslandId).map(e => e.buildingTypeId);
 
-    const available = BASE_GAME.buildingTypes
+    const available = this._gameData.buildingTypes
       .filter(bt => !existingIds.includes(bt.id))
       .sort((a, b) => a.name.localeCompare(b.name));
 
     if (available.length === 0) {
-      Toast.info('All building types are already tracked for this island.');
+      Toast.show('All building types are already tracked for this island.');
       return;
     }
 

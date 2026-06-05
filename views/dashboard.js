@@ -9,7 +9,7 @@ import { SaveManager } from '../modules/save-manager.js';
 import { IslandsService } from '../modules/islands.js';
 import { SpecialistTracker } from '../modules/specialist-tracker.js';
 import { GoodsTracker } from '../modules/goods-tracker.js';
-import { BASE_GAME } from '../data/base-game.js';
+import { getMergedData } from '../data/dlc-registry.js';
 import { BottomNav, TABS } from '../components/bottom-nav.js';
 import { SpecialistsView } from './specialists-view.js';
 import { GoodsView } from './goods-view.js';
@@ -123,6 +123,8 @@ export const DashboardView = {
   },
 
   _overviewHTML() {
+    const save = SaveManager.get(this._saveId);
+    const gameData = getMergedData(save?.activeDlcIds ?? []);
     const islands = IslandsService.list(this._saveId);
     const deficits = GoodsTracker.getDeficitGoods(this._saveId);
     const unassigned = SpecialistTracker.getUnassignedCount(this._saveId);
@@ -139,7 +141,7 @@ export const DashboardView = {
     const deficitRows = deficits.length === 0
       ? `<p class="text-muted text-sm">No deficits recorded.</p>`
       : deficits.map(d => {
-          const good = BASE_GAME.goods.find(g => g.id === d.goodId);
+          const good = gameData.goods.find(g => g.id === d.goodId);
           const islandName = islands.find(i => i.id === d.islandId)?.name || d.islandId;
           return `<div class="deficit-row">
             <span class="trend-badge trend-deficit">▼ ${escapeHtml(good?.name || d.goodId)}</span>
